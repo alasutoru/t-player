@@ -1,0 +1,24 @@
+[package]
+name = "t-player"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# 音訊解碼 (純 Rust)
+symphonia = { version = "0.5.3", features = ["all"] }
+# 音訊輸出
+cpal = "0.15.3"
+# UI 框架
+dioxus = { version = "0.5.4", features = ["desktop"] }
+# 非同步與工具
+tokio = { version = "1.36", features = ["full"] }
+anyhow = "1.0.81"
+log = "0.4.21"
+env_logger = "0.11.3"
+futures-util = "0.3"
+urlencoding = "2.1"
+serde = "1.0.228"
+serde_json = "1.0.149"
+axum = "0.8.8"
+tower-http = { version = "0.6.8", features = ["fs", "cors"] }
+tower = { version = "0.5.3", features = ["util"] }
