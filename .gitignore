@@ -1,1 +1,16 @@
+# Rust
 /target
+Cargo.lock
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.log
