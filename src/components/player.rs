@@ -11,8 +11,90 @@ pub fn Player(video_url: String, on_close: EventHandler<()>) -> Element {
             const video = document.getElementById('main-video');
             if (!video) return;
 
+            // ── Resume from last position ──
+            const url = new URL(video.src);
+            const filePath = url.searchParams.get('file');
+            const storageKey = 'tplayer_' + filePath;
+
+            const savedPos = localStorage.getItem(storageKey);
+            if (savedPos) {
+                video.currentTime = parseFloat(savedPos);
+            }
+
+            // Save position every 3s (skip if near end)
+            let lastSave = 0;
+            video.ontimeupdate = () => {
+                const now = Date.now();
+                if (now - lastSave > 3000) {
+                    if (video.duration - video.currentTime > 5) {
+                        localStorage.setItem(storageKey, video.currentTime);
+                    }
+                    lastSave = now;
+                }
+            };
+
+            // Clear on ended (next play starts fresh)
+            video.onended = () => {
+                localStorage.removeItem(storageKey);
+            };
+
+
+            // ── Playback speed control (Arrow keys) ──
+            const speeds = [0.5, 1.0, 1.25, 1.5, 2.0];
+            let speedIndex = 1;
+
+            function showSpeed(rate) {
+                let el = document.getElementById('speed-osd');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'speed-osd';
+                    el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 24px;border-radius:8px;font-size:20px;font-family:monospace;z-index:100;transition:opacity 0.5s;pointer-events:none;';
+                    document.body.appendChild(el);
+                }
+                el.textContent = rate + 'x';
+                el.style.opacity = '1';
+                clearTimeout(el._t);
+                el._t = setTimeout(() => el.style.opacity = '0', 1000);
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ']') {
+                    if (speedIndex < speeds.length - 1) speedIndex++;
+                    video.playbackRate = speeds[speedIndex];
+                    showSpeed(speeds[speedIndex]);
+                }
+                if (e.key === '[') {
+                    if (speedIndex > 0) speedIndex--;
+                    video.playbackRate = speeds[speedIndex];
+                    showSpeed(speeds[speedIndex]);
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    video.currentTime = Math.min(video.currentTime + 15, video.duration);
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    video.currentTime = Math.max(video.currentTime - 15, 0);
+                }
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (video.paused) video.play(); else video.pause();
+                }
+            });
+
+            // ── Resize window + auto-load subtitle ──
             video.onloadedmetadata = () => {
                 dioxus.send({ type: 'resize', width: video.videoWidth, height: video.videoHeight });
+
+                // Auto-load same-name subtitle (.srt/.vtt)
+                const subUrl = video.src.replace('/stream?', '/subtitle?');
+                const track = document.createElement('track');
+                track.kind = 'subtitles';
+                track.label = 'Subtitles';
+                track.src = subUrl;
+                track.default = true;
+                video.appendChild(track);
+                track.track.mode = 'showing';
             };
         "#);
 

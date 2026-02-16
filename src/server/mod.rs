@@ -23,6 +23,7 @@ pub async fn start_server() -> u16 {
     
     let app = Router::new()
         .route("/stream", get(stream_handler))
+        .route("/subtitle", get(subtitle_handler))
         .layer(CorsLayer::permissive());
 
     tokio::spawn(async move {
@@ -51,4 +52,49 @@ async fn stream_handler(Query(params): Query<VideoParams>, req: Request) -> impl
         )
             .into_response(),
     }
+}
+
+async fn subtitle_handler(Query(params): Query<VideoParams>) -> impl IntoResponse {
+    let video_path = PathBuf::from(&params.file);
+
+    // Try .srt first, then .vtt
+    let srt_path = video_path.with_extension("srt");
+    let vtt_path = video_path.with_extension("vtt");
+
+    if vtt_path.exists() {
+        // Serve .vtt directly
+        let content = match std::fs::read_to_string(&vtt_path) {
+            Ok(c) => c,
+            Err(_) => return axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        };
+        return (
+            [(axum::http::header::CONTENT_TYPE, "text/vtt; charset=utf-8")],
+            content,
+        ).into_response();
+    }
+
+    if srt_path.exists() {
+        // Convert .srt → .vtt on the fly
+        let srt = match std::fs::read_to_string(&srt_path) {
+            Ok(c) => c,
+            Err(_) => return axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        };
+
+        let mut vtt = String::from("WEBVTT\n\n");
+        for line in srt.lines() {
+            if line.contains(" --> ") {
+                vtt.push_str(&line.replace(',', "."));
+            } else {
+                vtt.push_str(line);
+            }
+            vtt.push('\n');
+        }
+
+        return (
+            [(axum::http::header::CONTENT_TYPE, "text/vtt; charset=utf-8")],
+            vtt,
+        ).into_response();
+    }
+
+    axum::http::StatusCode::NOT_FOUND.into_response()
 }
