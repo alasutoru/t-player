@@ -13,14 +13,11 @@ jobs:
     name: Build - ${{ matrix.platform }}
     strategy:
       matrix:
-        platform: [macos-latest, windows-latest]
+        platform: [macos-latest]
         include:
           - platform: macos-latest
             artifact_name: t-player
             asset_name: t-player-macos
-          - platform: windows-latest
-            artifact_name: t-player.exe
-            asset_name: t-player-windows.exe
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -50,6 +47,5 @@ jobs:
         with:
           files: |
             t-player-macos/t-player
-            t-player-windows.exe/t-player.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
