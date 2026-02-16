@@ -18,7 +18,6 @@ This project is an exploration of building robust, standalone desktop applicatio
 - **Pure Rust Audio Engine**: Custom-built audio playback using `symphonia` for decoding and `cpal` for cross-platform audio output. No heavy media frameworks required.
 - **Local Video Streaming**: Integrated `axum` HTTP server that streams video content directly to the UI, ensuring smooth playback without external players.
 - **Drag & Drop Interface**: Simple, intuitive user experience. Just drop your media file, and it plays.
-- **Cross-Platform**: Compiles to native binaries for both macOS and Windows.
 - **Highly Optimized**: Built with Link Time Optimization (LTO) and binary stripping for maximum efficiency and minimal footprint.
 
 ## Installation
@@ -26,7 +25,6 @@ This project is an exploration of building robust, standalone desktop applicatio
 ### Download Binaries
 Go to the [Releases](https://github.com/alasutoru/t-player/releases) page and download the latest version for your operating system:
 - **macOS**: `t-player`
-- **Windows**: `t-player.exe`
 
 ### Build from Source
 If you prefer to build it yourself, ensure you have Rust installed.
