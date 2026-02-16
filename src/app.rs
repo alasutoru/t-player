@@ -51,6 +51,8 @@ pub fn App() -> Element {
     };
 
     rsx! {
+        // Global CSS reset - kill body margins and scrollbars
+        style { "html, body {{ margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; }}" }
         div {
             style: "height: 100vh; background: #080808; color: #fff; display: flex; flex-direction: column; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;",
             autofocus: true,
